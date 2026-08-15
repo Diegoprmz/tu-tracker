@@ -202,6 +202,25 @@
   .heat .cell.rescued{background:color-mix(in srgb,var(--ember) 65%,transparent)}
   .heat .cell.today{outline:2px solid var(--accent);outline-offset:1px}
 
+  /* reto compartido / leaderboard */
+  .chhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+  .chhead b{font-family:var(--font-display);font-size:1rem}
+  .chip-code{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:.7rem;letter-spacing:.05em;background:var(--glass-2);border:1px solid var(--line);border-radius:99px;padding:5px 10px;color:var(--accent);flex:0 0 auto}
+  .lb{list-style:none;margin:12px 0 0;padding:0}
+  .lb li{display:flex;align-items:center;gap:12px;padding:11px 8px;border-top:1px dashed var(--line-soft)}
+  .lb li:first-child{border-top:0}
+  .lb .rk{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-family:var(--font-display);font-weight:700;background:var(--glass-2);color:var(--soft);flex:0 0 auto}
+  .lb li.top1 .rk{background:var(--accent);color:var(--on-accent);box-shadow:var(--glow)}
+  .lb .who{flex:1;min-width:0}
+  .lb .who b{font-size:.92rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
+  .lb .who small{color:var(--soft);font-size:.74rem}
+  .lb li.me{background:color-mix(in srgb,var(--accent) 10%,transparent);border-radius:11px}
+  .lb .sc{text-align:right;flex:0 0 auto}
+  .lb .sc b{font-family:var(--font-display);font-size:1.1rem}
+  .lb .sc small{display:block;color:var(--soft);font-size:.66rem;text-transform:uppercase;letter-spacing:.06em}
+  .preview-tag{color:var(--ember);font-weight:600}
+  .codebox{margin-top:6px;text-align:center;font-family:var(--font-display);font-weight:700;font-size:1.5rem;letter-spacing:.10em;color:var(--accent);background:var(--glass-2);border:1px dashed var(--accent);border-radius:12px;padding:18px;box-shadow:var(--glow)}
+
   dialog{border:0;border-radius:var(--radius);padding:0;max-width:460px;width:92%;background:transparent;color:var(--ink)}
   dialog::backdrop{background:rgba(6,10,16,.72);backdrop-filter:blur(4px)}
   .modal{background:var(--modal-bg);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);max-height:86vh;overflow:auto}
@@ -386,6 +405,16 @@
   </div>
 
   <div class="card">
+    <h2>Reto compartido</h2>
+    <p class="sub">Compite con amigos en una misma meta. <span class="preview-tag">· vista previa</span></p>
+    <div class="c">
+      <div class="chhead"><b id="chName">—</b><span class="chip-code" id="chCode">—</span></div>
+      <ul class="lb" id="lb"></ul>
+      <button class="addbtn" id="challengeBtn" style="margin-top:14px">＋ Crear o unirme a un reto</button>
+    </div>
+  </div>
+
+  <div class="card">
     <h2>Recompensas por racha</h2><p class="sub">Lo que te ganas — tú lo definiste.</p>
     <div class="c" id="rewards"></div>
   </div>
@@ -397,7 +426,7 @@
 
   <div class="foot">
     <div class="by"><img src="brand-monogram.png" alt=""><span>by Dipzon.Dev</span></div>
-    <small>TuTracker v1.2.0 · offline-first · sincronizado</small>
+    <small>TuTracker v1.2.1 · offline-first · sincronizado</small>
     <button class="reset" id="resetBtn">Reiniciar mi tracker</button>
   </div>
 
@@ -497,6 +526,42 @@
   <h3>⬇️ Instalar TuTracker</h3>
   <p class="msub" id="installHelp">—</p>
   <div class="row"><button class="btn2 ghost" id="installClose" style="flex:1">Entendido</button></div>
+</div></dialog>
+
+<!-- reto: entrada -->
+<dialog id="retoEntryDlg"><div class="modal">
+  <h3>Reto compartido</h3>
+  <p class="msub">Compite con amigos en una misma meta.</p>
+  <button class="btn2 fullw" id="retoCreateBtn">➕ Crear un reto</button>
+  <button class="btn2 ghost fullw" id="retoJoinBtn">🔑 Unirme con código</button>
+  <div class="row"><button class="btn2 ghost" id="retoEntryClose" style="flex:1">Cerrar</button></div>
+</div></dialog>
+
+<!-- reto: crear -->
+<dialog id="retoCreateDlg"><div class="modal">
+  <h3>Crear un reto</h3>
+  <p class="msub">Ponle nombre; invitas en el siguiente paso.</p>
+  <input id="rcName" placeholder="Nombre del reto (ej: Reto CS50)">
+  <input id="rcMe" placeholder="Tu nombre visible (ej: Diego)" style="margin-top:8px">
+  <div class="row"><button class="btn2" id="rcCreate" style="flex:1">Crear e invitar</button><button class="btn2 ghost" id="rcCancel">Cancelar</button></div>
+</div></dialog>
+
+<!-- reto: compartir -->
+<dialog id="retoShareDlg"><div class="modal">
+  <h3>¡Reto creado! 🎉</h3>
+  <p class="msub">Comparte el código o el enlace para que se unan.</p>
+  <div class="codebox" id="shareCode">—</div>
+  <div class="row" style="margin-top:12px"><button class="btn2" id="shareBtn" style="flex:1">📲 Compartir invitación</button><button class="btn2 ghost" id="copyBtn">Copiar</button></div>
+  <button class="btn2 ghost fullw" id="shareClose" style="margin-top:10px;margin-bottom:0">Listo</button>
+</div></dialog>
+
+<!-- reto: unirse -->
+<dialog id="retoJoinDlg"><div class="modal">
+  <h3>Unirme a un reto</h3>
+  <p class="msub">Pega el código que te compartieron.</p>
+  <input id="rjCode" placeholder="Código (ej: BASES-DB-7K2)" style="text-transform:uppercase">
+  <input id="rjMe" placeholder="Tu nombre visible" style="margin-top:8px">
+  <div class="row"><button class="btn2" id="rjJoin" style="flex:1">Unirme</button><button class="btn2 ghost" id="rjCancel">Cancelar</button></div>
 </div></dialog>
 
 <div class="toast" id="toast"></div>
@@ -781,7 +846,28 @@ function renderEvents(){
 function renderMedals(){ const a=agg(),wrap=$("medals"); wrap.innerHTML=""; MEDALS.forEach(m=>{ const on=m.test(a); const el=document.createElement("div"); el.className="medal"+(on?" on":""); el.innerHTML='<div class="e">'+m.e+'</div><div class="t">'+m.t+'</div><div class="d">'+m.d+'</div>'; wrap.appendChild(el); }); }
 function renderRewards(){ const s=computeStreak(),wrap=$("rewards"); wrap.innerHTML=""; REWARDS.forEach(r=>{ const hit=s>=r.d; const el=document.createElement("div"); el.className="rw"+(hit?" hit":""); el.innerHTML='<div class="n">'+r.d+'</div><div class="tx"><b>'+r.t+'</b><small>'+r.s+'</small></div><div class="st">'+(hit?"¡Ganada! ✓":(r.d-s)+" días")+'</div>'; wrap.appendChild(el); }); }
 function renderHeat(){ const wrap=$("heat"); wrap.innerHTML=""; const cells=[]; for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); cells.push(ymd(d)); } cells.forEach(k=>{ const day=DB.days[k],el=document.createElement("div"); let cls="cell"; if(day){ if(isCompleted(k))cls+=" l3"; else if(isRescued(k))cls+=" rescued"; else {const n=habitsDone(k); if(n>=3)cls+=" l2"; else if(n>=1)cls+=" l1";} } if(k===TODAY)cls+=" today"; el.className=cls; el.title=k; wrap.appendChild(el); }); }
-function renderAll(){ renderStats();renderToday();renderRoutine();renderGoals();renderVs();renderWins();renderEvents();renderMedals();renderRewards();renderHeat();renderHabits(); }
+// ---- Reto compartido (MOCKUP con datos de ejemplo; backend pendiente) ----
+const MOCK_CHALLENGE = {
+  name:"Reto CS50 · Bases de Datos",
+  code:"BASES-DB-7K2",
+  members:[
+    {name:"Andrea", xp:710, streak:15},
+    {name:"Tú", xp:640, streak:12, me:true},
+    {name:"Luis", xp:520, streak:8},
+    {name:"Sofía", xp:480, streak:6}
+  ]
+};
+function renderChallenge(){
+  $("chName").textContent=MOCK_CHALLENGE.name;
+  $("chCode").textContent="🔑 "+MOCK_CHALLENGE.code;
+  const ul=$("lb"); ul.innerHTML="";
+  MOCK_CHALLENGE.members.slice().sort((a,b)=>b.xp-a.xp).forEach((m,i)=>{
+    const li=document.createElement("li"); li.className=(i===0?"top1 ":"")+(m.me?"me":"");
+    li.innerHTML='<div class="rk">'+(i+1)+'</div><div class="who"><b>'+esc(m.name)+'</b><small>Racha '+m.streak+' 🔥</small></div><div class="sc"><b>'+m.xp+'</b><small>XP reto</small></div>';
+    ul.appendChild(li);
+  });
+}
+function renderAll(){ renderStats();renderToday();renderRoutine();renderGoals();renderVs();renderWins();renderEvents();renderChallenge();renderMedals();renderRewards();renderHeat();renderHabits(); }
 
 function uid(){ return "h"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 
@@ -919,6 +1005,27 @@ $("activRunClose").addEventListener("click",()=>$("activRunDlg").close());
 $("activRunDone").addEventListener("click",()=>{ today.activated=true; persist(); $("activRunDlg").close(); toast("Inercia rota ⚡ Racha protegida"); renderAll(); });
 $("actEdSave").addEventListener("click",saveActivation);
 $("actEdCancel").addEventListener("click",()=>$("activEditDlg").close());
+
+// ---- Reto: flujo de invitación (mockup) ----
+function genCode(){ const w=["BASES","CODE","GYM","LEER","RETO","FOCO","RUN"]; return w[Math.floor(Math.random()*w.length)]+"-"+Math.random().toString(36).slice(2,5).toUpperCase()+"-"+Math.floor(Math.random()*90+10); }
+let pendingCode="";
+function retoLink(code){ return location.origin+"/?reto="+code; }
+$("challengeBtn").addEventListener("click",()=>$("retoEntryDlg").showModal());
+$("retoEntryClose").addEventListener("click",()=>$("retoEntryDlg").close());
+$("retoCreateBtn").addEventListener("click",()=>{ $("retoEntryDlg").close(); $("rcName").value=""; $("rcMe").value=""; $("retoCreateDlg").showModal(); setTimeout(()=>$("rcName").focus(),50); });
+$("retoJoinBtn").addEventListener("click",()=>{ $("retoEntryDlg").close(); $("rjCode").value=""; $("rjMe").value=""; $("retoJoinDlg").showModal(); setTimeout(()=>$("rjCode").focus(),50); });
+$("rcCancel").addEventListener("click",()=>$("retoCreateDlg").close());
+$("rcCreate").addEventListener("click",()=>{ if(!$("rcName").value.trim()){ toast("Ponle nombre al reto."); return; } if(!$("rcMe").value.trim()){ toast("Escribe tu nombre visible."); return; } pendingCode=genCode(); $("shareCode").textContent=pendingCode; $("retoCreateDlg").close(); $("retoShareDlg").showModal(); });
+$("shareClose").addEventListener("click",()=>$("retoShareDlg").close());
+$("copyBtn").addEventListener("click",async ()=>{ try{ await navigator.clipboard.writeText(pendingCode+"  ·  "+retoLink(pendingCode)); toast("Copiado ✓"); }catch(e){ toast("Código: "+pendingCode); } });
+$("shareBtn").addEventListener("click",async ()=>{
+  const msg="Únete a mi reto en TuTracker 💪 Código: "+pendingCode;
+  const url=retoLink(pendingCode);
+  if(navigator.share){ try{ await navigator.share({title:"TuTracker · Reto compartido", text:msg, url}); }catch(e){} }
+  else { window.open("https://wa.me/?text="+encodeURIComponent(msg+" 👉 "+url),"_blank"); }
+});
+$("rjCancel").addEventListener("click",()=>$("retoJoinDlg").close());
+$("rjJoin").addEventListener("click",()=>{ if(!$("rjCode").value.trim()){ toast("Pega el código."); return; } if(!$("rjMe").value.trim()){ toast("Escribe tu nombre visible."); return; } $("retoJoinDlg").close(); toast("¡Te uniste al reto! (demo)"); });
 
 $("gateInstall").addEventListener("click",installApp);
 $("acctInstall").addEventListener("click",installApp);
