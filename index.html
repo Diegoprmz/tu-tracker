@@ -40,24 +40,33 @@
   }
   :root[data-theme="light"]{
     color-scheme: light;
-    --bg:#f4f3ec;
-    --ink:#16222f;--soft:#5a6472;
-    --silver:#7a828c;--silver-light:#5a6472;
-    --accent:#0f9d6b;--accent-light:#0c8459;--on-accent:#ffffff;
+    /* Paleta día: watermelon + royal gold + mint cream; deep space blue + stormy teal de apoyo */
+    --bg:#F4FFFD;                       /* mint cream */
+    --ink:#153243;                      /* deep space blue */
+    --soft:#4f6d70;                     /* stormy teal atenuado */
+    --silver:#4f6d70;--silver-light:#153243;
+    --accent:#ED254E;                   /* watermelon (principal) */
+    --accent-light:#F9DC5C;             /* royal gold (realce/degradados) */
+    --on-accent:#ffffff;
     --ember:#e07a3c;
-    --line:rgba(15,24,34,.13);--line-soft:rgba(15,24,34,.07);
-    --card-bg:rgba(255,255,255,.72);--card-border:rgba(15,24,34,.09);
-    --input-bg:#ffffff;--input-ph:#9aa3ad;
-    --modal-bg:linear-gradient(150deg,#ffffff,#f2f1e9);
-    --glass-2:rgba(15,24,34,.045);
-    --glow:0 0 16px rgba(15,157,107,.35);--glow-strong:0 0 24px rgba(15,157,107,.5);
+    --line:rgba(21,50,67,.14);--line-soft:rgba(21,50,67,.075);
+    --card-bg:rgba(255,255,255,.80);--card-border:rgba(21,50,67,.10);
+    --input-bg:#ffffff;--input-ph:#8aa0a2;
+    --modal-bg:linear-gradient(150deg,#ffffff,#eafbf6);
+    --glass-2:rgba(21,50,67,.05);
+    --glow:0 0 16px rgba(237,37,78,.30);--glow-strong:0 0 24px rgba(237,37,78,.48);
     --ember-glow:0 0 16px rgba(224,122,60,.4);
-    --shadow:0 20px 50px -30px rgba(20,30,45,.30);
+    --shadow:0 20px 50px -30px rgba(21,50,67,.32);
     --body-bg:
-      radial-gradient(120% 80% at 72% 0%, rgba(15,157,107,.08) 0%, transparent 55%),
-      radial-gradient(90% 70% at 8% 100%, rgba(22,34,47,.05) 0%, transparent 60%),
+      radial-gradient(120% 80% at 72% 0%, rgba(249,220,92,.20) 0%, transparent 55%),
+      radial-gradient(90% 70% at 8% 100%, rgba(237,37,78,.08) 0%, transparent 60%),
       var(--bg);
   }
+  /* Panel superior en modo día: deep space blue → stormy teal */
+  :root[data-theme="light"] .top{background:linear-gradient(150deg,#153243,#12303f 55%,#156064)}
+  :root[data-theme="light"] .top::after{background:radial-gradient(circle,rgba(249,220,92,.28),transparent 70%)}
+  :root[data-theme="light"] .top .stat .n{color:#fff}
+  :root[data-theme="light"] .lvlbar > i{background:linear-gradient(90deg,#ED254E,#F9DC5C)}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
   html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
@@ -224,6 +233,43 @@
   .chtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
   .chtab{border:1px solid var(--line);background:var(--glass-2);color:var(--soft);border-radius:99px;padding:6px 12px;font:inherit;font-size:.76rem;font-weight:600;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .chtab.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent);box-shadow:var(--glow)}
+  .chactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .chactions button{flex:1;min-width:92px;border:1px solid var(--line);background:var(--glass-2);color:var(--soft);border-radius:11px;padding:10px;font:inherit;font-size:.8rem;font-weight:600;cursor:pointer;transition:.15s}
+  .chactions button:hover{border-color:var(--accent);color:var(--accent)}
+  .chactions button.danger{color:var(--ember);border-color:color-mix(in srgb,var(--ember) 35%,transparent)}
+  .chactions button.danger:hover{border-color:var(--ember);color:var(--ember)}
+
+  /* emoji picker */
+  .emojigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;max-height:52vh;overflow:auto;margin-top:6px}
+  .emojigrid button{font-size:1.35rem;background:var(--glass-2);border:1px solid var(--line);border-radius:10px;padding:7px 0;cursor:pointer;line-height:1}
+  .emojigrid button:hover{border-color:var(--accent);box-shadow:var(--glow)}
+  input.hem,#evEm{cursor:pointer}
+  .medalsmore{margin-top:12px}
+
+  /* celebración de insignias */
+  .celebrate{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(6,10,16,.72);backdrop-filter:blur(6px)}
+  .celebrate.on{display:flex;animation:celeBg .35s ease both}
+  @keyframes celeBg{from{opacity:0}to{opacity:1}}
+  .celebox{position:relative;text-align:center;padding:30px}
+  .celering{position:absolute;top:6px;left:50%;width:120px;height:120px;margin-left:-60px;border-radius:50%;border:3px solid var(--accent);animation:celeRing 1s ease-out forwards;pointer-events:none}
+  @keyframes celeRing{0%{transform:scale(.4);opacity:.9}100%{transform:scale(2.8);opacity:0}}
+  .celebadge{font-size:5rem;filter:drop-shadow(0 0 26px color-mix(in srgb,var(--accent) 85%,transparent));animation:celePop .75s cubic-bezier(.2,1.5,.4,1) both}
+  @keyframes celePop{0%{transform:scale(0) rotate(-40deg);opacity:0}55%{transform:scale(1.3) rotate(10deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+  .celetitle{font-family:var(--font-display);font-weight:700;font-size:1.7rem;color:var(--accent);margin-top:12px;text-shadow:0 0 20px color-mix(in srgb,var(--accent) 60%,transparent);animation:celeUp .5s .18s both}
+  .celename{color:var(--ink);font-size:1.05rem;margin-top:4px;animation:celeUp .5s .3s both}
+  .celehint{color:var(--soft);font-size:.76rem;margin-top:18px;animation:celeUp .5s .5s both}
+  @keyframes celeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .spark{position:absolute;top:44%;left:50%;font-size:1.5rem;animation:sparkFly .9s ease-out forwards;pointer-events:none}
+  @keyframes sparkFly{0%{transform:translate(0,0) scale(.4);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.25);opacity:0}}
+
+  /* móvil: aligerar glow (se veía cargado en la primera card) */
+  @media (max-width:540px){
+    .top::after{opacity:.38;width:70%}
+    .card{box-shadow:0 14px 40px -28px rgba(0,0,0,.75)}
+    #ringfill{filter:drop-shadow(0 0 3px color-mix(in srgb,var(--accent) 50%,transparent))}
+    .lvlbar > i{box-shadow:none}
+    .habit.done .chk,.rtask.done .chk{box-shadow:none}
+  }
 
   dialog{border:0;border-radius:var(--radius);padding:0;max-width:460px;width:92%;background:transparent;color:var(--ink)}
   dialog::backdrop{background:rgba(6,10,16,.72);backdrop-filter:blur(4px)}
@@ -405,7 +451,9 @@
 
   <div class="card">
     <h2>Insignias</h2><p class="sub">Se desbloquean solas.</p>
-    <div class="c"><div class="medals" id="medals"></div></div>
+    <div class="c"><div class="medals" id="medals"></div>
+      <button class="editlink medalsmore" id="medalsMore">Ver todas las insignias</button>
+    </div>
   </div>
 
   <div class="card">
@@ -415,6 +463,7 @@
       <div class="chtabs" id="chTabs"></div>
       <div class="chhead"><b id="chName">—</b><span class="chip-code" id="chCode">—</span></div>
       <ul class="lb" id="lb"></ul>
+      <div class="chactions" id="chActions"></div>
       <button class="addbtn" id="challengeBtn" style="margin-top:14px">＋ Crear o unirme a un reto</button>
     </div>
   </div>
@@ -425,13 +474,13 @@
   </div>
 
   <div class="card">
-    <h2>Tus últimos 14 días</h2><p class="sub">Verde = cumplido · Ámbar = salvado con activación.</p>
+    <h2>Tus últimos 14 días</h2><p class="sub">Relleno = cumplido · Ámbar = salvado con activación.</p>
     <div class="c"><div class="heat" id="heat"></div></div>
   </div>
 
   <div class="foot">
     <div class="by"><img src="brand-monogram.png" alt=""><span>by Dipzon.Dev</span></div>
-    <small>TuTracker v1.2.1 · offline-first · sincronizado</small>
+    <small>TuTracker v1.3.0 · offline-first · sincronizado</small>
     <button class="reset" id="resetBtn">Reiniciar mi tracker</button>
   </div>
 
@@ -519,7 +568,7 @@
   <h3>Fecha importante</h3>
   <p class="msub">Un examen, una carrera, una competencia…</p>
   <div style="display:flex;gap:8px">
-    <input id="evEm" maxlength="2" placeholder="🎯" style="width:56px;flex:0 0 auto;text-align:center;font-size:1.1rem">
+    <input id="evEm" readonly maxlength="2" placeholder="🎯" style="width:56px;flex:0 0 auto;text-align:center;font-size:1.1rem;cursor:pointer">
     <input id="evTitle" placeholder="Ej: Examen final, Maratón CDMX" style="flex:1">
   </div>
   <input id="evDate" type="date" style="margin-top:8px">
@@ -568,6 +617,38 @@
   <input id="rjMe" placeholder="Tu nombre visible" style="margin-top:8px">
   <div class="row"><button class="btn2" id="rjJoin" style="flex:1">Unirme</button><button class="btn2 ghost" id="rjCancel">Cancelar</button></div>
 </div></dialog>
+
+<!-- reto: renombrar (solo dueño) -->
+<dialog id="retoRenameDlg"><div class="modal">
+  <h3>Editar reto</h3>
+  <p class="msub">Cambia el nombre del reto. Solo el dueño puede.</p>
+  <input id="rnName" placeholder="Nuevo nombre del reto">
+  <div class="row"><button class="btn2" id="rnSave" style="flex:1">Guardar</button><button class="btn2 ghost" id="rnCancel">Cancelar</button></div>
+</div></dialog>
+
+<!-- emoji picker -->
+<dialog id="emojiDlg"><div class="modal">
+  <h3>Elige un emoji</h3>
+  <div class="emojigrid" id="emojiGrid"></div>
+  <div class="row"><button class="btn2 ghost" id="emojiClose" style="flex:1">Cerrar</button></div>
+</div></dialog>
+
+<!-- todas las insignias -->
+<dialog id="medalsDlg"><div class="modal">
+  <h3>Insignias</h3>
+  <p class="msub" id="medalsCount">—</p>
+  <div class="medals" id="medalsAll"></div>
+  <div class="row"><button class="btn2 ghost" id="medalsClose" style="flex:1">Cerrar</button></div>
+</div></dialog>
+
+<!-- celebración de insignia -->
+<div class="celebrate" id="celebrate"><div class="celebox">
+  <div class="celering"></div>
+  <div class="celebadge" id="celeEmoji">🏆</div>
+  <div class="celetitle">¡Nueva insignia!</div>
+  <div class="celename" id="celeName">—</div>
+  <div class="celehint">Toca para continuar</div>
+</div></div>
 
 <div class="toast" id="toast"></div>
 
@@ -746,7 +827,7 @@ async function initSync(){ setSync("⟳ sincronizando…"); const remote=await p
 window.addEventListener("online", ()=>{ if(UID) schedulePush(); });
 
 // ================= THEME =================
-function applyTheme(t){ document.documentElement.setAttribute("data-theme",t); const b=document.getElementById("themeBtn"); if(b) b.textContent=t==="light"?"🌙":"☀️"; const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content", t==="light"?"#f4f3ec":"#0f1822"); try{localStorage.setItem("tt_theme",t);}catch(e){} }
+function applyTheme(t){ document.documentElement.setAttribute("data-theme",t); const b=document.getElementById("themeBtn"); if(b) b.textContent=t==="light"?"🌙":"☀️"; const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content", t==="light"?"#F4FFFD":"#0f1822"); try{localStorage.setItem("tt_theme",t);}catch(e){} }
 function initTheme(){ let t="dark"; try{ t=localStorage.getItem("tt_theme")||"dark"; }catch(e){} applyTheme(t); }
 
 // ================= INSTALL (PWA) =================
@@ -848,7 +929,42 @@ function renderEvents(){
     ul.appendChild(li);
   });
 }
-function renderMedals(){ const a=agg(),wrap=$("medals"); wrap.innerHTML=""; MEDALS.forEach(m=>{ const on=m.test(a); const el=document.createElement("div"); el.className="medal"+(on?" on":""); el.innerHTML='<div class="e">'+m.e+'</div><div class="t">'+m.t+'</div><div class="d">'+m.d+'</div>'; wrap.appendChild(el); }); }
+function medalCard(m,on){ const el=document.createElement("div"); el.className="medal"+(on?" on":""); el.innerHTML='<div class="e">'+m.e+'</div><div class="t">'+m.t+'</div><div class="d">'+m.d+'</div>'; return el; }
+function renderMedals(){
+  const a=agg(),wrap=$("medals"); wrap.innerHTML="";
+  const ordered=MEDALS.slice().sort((m1,m2)=>(m1.test(a)?0:1)-(m2.test(a)?0:1)); // ganadas primero
+  ordered.slice(0,3).forEach(m=>wrap.appendChild(medalCard(m,m.test(a))));
+  const earned=MEDALS.filter(m=>m.test(a)).length;
+  const mb=$("medalsMore"); if(mb) mb.textContent="Ver todas ("+earned+"/"+MEDALS.length+")";
+  checkNewMedals(a);
+}
+function renderAllMedals(){
+  const a=agg(),wrap=$("medalsAll"); wrap.innerHTML="";
+  MEDALS.forEach(m=>wrap.appendChild(medalCard(m,m.test(a))));
+  $("medalsCount").textContent=MEDALS.filter(m=>m.test(a)).length+" de "+MEDALS.length+" desbloqueadas";
+}
+// ---- Celebración al ganar insignia ----
+function checkNewMedals(a){
+  let seen=null; try{ seen=JSON.parse(localStorage.getItem("tt_medals_seen")); }catch(e){}
+  const earned=MEDALS.filter(m=>m.test(a)).map(m=>m.t);
+  if(!Array.isArray(seen)){ try{ localStorage.setItem("tt_medals_seen", JSON.stringify(earned)); }catch(e){} return; }
+  const neu=earned.filter(t=>!seen.includes(t));
+  if(neu.length){ try{ localStorage.setItem("tt_medals_seen", JSON.stringify(earned)); }catch(e){} celebrateMedal(neu[0], neu.length); }
+}
+function celebrateMedal(title, count){
+  const m=MEDALS.find(x=>x.t===title)||{e:"🏆",t:title};
+  $("celeEmoji").textContent=m.e; $("celeName").textContent=count>1?(m.t+" +"+(count-1)+" más"):m.t;
+  const box=document.querySelector("#celebrate .celebox");
+  box.querySelectorAll(".spark").forEach(s=>s.remove());
+  [[-100,-80],[100,-80],[-130,10],[130,10],[0,-140],[-70,70],[70,70],[0,120]].forEach((d,i)=>{ const s=document.createElement("div"); s.className="spark"; s.textContent="✨"; s.style.setProperty("--dx",d[0]+"px"); s.style.setProperty("--dy",d[1]+"px"); s.style.animationDelay=(i*0.03)+"s"; box.appendChild(s); });
+  const ov=$("celebrate"); ov.classList.remove("on"); void ov.offsetWidth; ov.classList.add("on");
+  try{ if(navigator.vibrate) navigator.vibrate([30,40,60]); }catch(e){}
+  clearTimeout(ov._t); ov._t=setTimeout(()=>ov.classList.remove("on"),2800);
+}
+// ---- Emoji picker ----
+const EMOJIS = ("🎯 🔥 💪 🧠 📚 📝 ✏️ 🏆 🥇 ⭐ ✨ ⚡ 🚀 💡 💰 💵 📈 💻 🖥️ 📱 🎨 🎵 🎸 🎹 🏃 🏋️ 🚴 🧘 ⛹️ 🤸 🥊 🥋 ⚽ 🏀 🎾 🏊 🏈 ⚾ 🏐 🎳 🥗 🍎 🥦 🥑 🍳 🍗 🍚 🥤 💧 ☕ 🍵 🥛 😴 🛏️ 🧹 🗑️ 🧺 🧼 🛒 🐶 🐱 🌱 🌳 🌊 ☀️ 🌙 ⛅ 📆 📅 ⏰ ✅ ☑️ 🔔 ❤️ 🧡 💛 💚 💙 💜 🙏 🤝 👏 👍 🎉 🎊 🏁 🧗 🏔️ 🗿 🎓 🔬 🧪 📖 📓 🗂️ 💼 🏢 📞 📧 🌍 🧳 🎬 📷 🎧 🎤 🗣️ 🕹️ ♟️ 🎲 🧩 🚿 🦷 💊 🩺 🕯️ 🧑‍💻 👨‍🍳 💃 🕺").split(" ");
+let emojiTarget=null;
+function openEmojiPicker(inp){ emojiTarget=inp; const g=$("emojiGrid"); if(!g.dataset.built){ EMOJIS.forEach(e=>{ const b=document.createElement("button"); b.type="button"; b.textContent=e; b.addEventListener("click",()=>{ if(emojiTarget){ emojiTarget.value=e; emojiTarget.dispatchEvent(new Event("input",{bubbles:true})); } $("emojiDlg").close(); }); g.appendChild(b); }); g.dataset.built="1"; } $("emojiDlg").showModal(); }
 function renderRewards(){ const s=computeStreak(),wrap=$("rewards"); wrap.innerHTML=""; REWARDS.forEach(r=>{ const hit=s>=r.d; const el=document.createElement("div"); el.className="rw"+(hit?" hit":""); el.innerHTML='<div class="n">'+r.d+'</div><div class="tx"><b>'+r.t+'</b><small>'+r.s+'</small></div><div class="st">'+(hit?"¡Ganada! ✓":(r.d-s)+" días")+'</div>'; wrap.appendChild(el); }); }
 function renderHeat(){ const wrap=$("heat"); wrap.innerHTML=""; const cells=[]; for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); cells.push(ymd(d)); } cells.forEach(k=>{ const day=DB.days[k],el=document.createElement("div"); let cls="cell"; if(day){ if(isCompleted(k))cls+=" l3"; else if(isRescued(k))cls+=" rescued"; else {const n=habitsDone(k); if(n>=3)cls+=" l2"; else if(n>=1)cls+=" l1";} } if(k===TODAY)cls+=" today"; el.className=cls; el.title=k; wrap.appendChild(el); }); }
 // ---- Reto compartido (backend Supabase) ----
@@ -857,7 +973,7 @@ function chScore(startIso){ const start=(startIso||"").slice(0,10); let s=0; Obj
 async function loadChallenges(){
   if(!UID) return;
   try{
-    const {data:chs}=await sb.from("challenges").select("id,code,name,created_at").order("created_at");
+    const {data:chs}=await sb.from("challenges").select("id,code,name,created_at,created_by").order("created_at");
     CHALLENGES=chs||[]; CH_MEMBERS={};
     for(const c of CHALLENGES){
       const {data:ms}=await sb.from("challenge_members").select("user_id,display_name,score,streak").eq("challenge_id",c.id);
@@ -877,9 +993,11 @@ async function pushMyScores(){
 }
 function renderChallenge(){
   const tabs=$("chTabs"); if(!tabs) return;
+  const act=$("chActions");
   if(!CHALLENGES.length){
     tabs.innerHTML=""; $("chName").textContent="Sin retos aún"; $("chCode").style.display="none";
-    $("lb").innerHTML='<div class="empty">Crea un reto o únete con un código para competir con amigos.</div>'; return;
+    $("lb").innerHTML='<div class="empty">Crea un reto o únete con un código para competir con amigos.</div>';
+    if(act) act.innerHTML=""; return;
   }
   $("chCode").style.display="";
   tabs.innerHTML="";
@@ -888,9 +1006,22 @@ function renderChallenge(){
   $("chName").textContent=c.name; $("chCode").textContent="🔑 "+c.code;
   const ul=$("lb"); ul.innerHTML="";
   const ms=(CH_MEMBERS[c.id]||[]).slice().sort((a,b)=>(b.score||0)-(a.score||0));
-  if(!ms.length){ ul.innerHTML='<div class="empty">Aún no hay miembros con puntuación.</div>'; return; }
-  ms.forEach((m,i)=>{ const me=m.user_id===UID; const li=document.createElement("li"); li.className=(i===0?"top1 ":"")+(me?"me":""); li.innerHTML='<div class="rk">'+(i+1)+'</div><div class="who"><b>'+esc(m.display_name)+(me?" (tú)":"")+'</b><small>Racha '+(m.streak||0)+' 🔥</small></div><div class="sc"><b>'+(m.score||0)+'</b><small>XP reto</small></div>'; ul.appendChild(li); });
+  if(!ms.length){ ul.innerHTML='<div class="empty">Aún no hay miembros con puntuación.</div>'; }
+  else ms.forEach((m,i)=>{ const me=m.user_id===UID; const li=document.createElement("li"); li.className=(i===0?"top1 ":"")+(me?"me":""); li.innerHTML='<div class="rk">'+(i+1)+'</div><div class="who"><b>'+esc(m.display_name)+(me?" (tú)":"")+'</b><small>Racha '+(m.streak||0)+' 🔥</small></div><div class="sc"><b>'+(m.score||0)+'</b><small>XP reto</small></div>'; ul.appendChild(li); });
+  if(act){
+    act.innerHTML="";
+    if(c.created_by===UID){
+      const eb=document.createElement("button"); eb.textContent="✎ Editar"; eb.addEventListener("click",()=>openRename(c)); act.appendChild(eb);
+      const db=document.createElement("button"); db.className="danger"; db.textContent="🗑 Eliminar"; db.addEventListener("click",()=>doDeleteChallenge(c)); act.appendChild(db);
+    }
+    const lv=document.createElement("button"); lv.className="danger"; lv.textContent="Salir del reto"; lv.addEventListener("click",()=>doLeaveChallenge(c)); act.appendChild(lv);
+  }
 }
+let renameCid=null;
+function openRename(c){ renameCid=c.id; $("rnName").value=c.name; $("retoRenameDlg").showModal(); setTimeout(()=>$("rnName").focus(),50); }
+async function doRename(){ const n=$("rnName").value.trim(); if(!n){ toast("Escribe un nombre."); return; } try{ const {error}=await sb.rpc("rename_challenge",{p_cid:renameCid,p_name:n}); if(error) throw error; $("retoRenameDlg").close(); await loadChallenges(); toast("Reto actualizado ✓"); }catch(e){ toast("No se pudo (¿eres el dueño?)"); } }
+async function doDeleteChallenge(c){ if(!confirm('¿Eliminar el reto "'+c.name+'" para todos? No se puede deshacer.')) return; try{ const {error}=await sb.rpc("delete_challenge",{p_cid:c.id}); if(error) throw error; if(activeCid===c.id) activeCid=null; await loadChallenges(); toast("Reto eliminado"); }catch(e){ toast("No se pudo (¿eres el dueño?)"); } }
+async function doLeaveChallenge(c){ if(!confirm('¿Salir del reto "'+c.name+'"?')) return; try{ const {error}=await sb.rpc("leave_challenge",{p_cid:c.id}); if(error) throw error; if(activeCid===c.id) activeCid=null; await loadChallenges(); toast("Saliste del reto"); }catch(e){ toast("No se pudo salir."); } }
 function checkRetoLink(){ try{ const p=new URLSearchParams(location.search).get("reto"); if(p && UID){ $("rjCode").value=p; $("rjMe").value=""; $("retoJoinDlg").showModal(); setTimeout(()=>$("rjMe").focus(),50); history.replaceState({},"",location.pathname); } }catch(e){} }
 function renderAll(){ renderStats();renderToday();renderRoutine();renderGoals();renderVs();renderWins();renderEvents();renderMedals();renderRewards();renderHeat();renderHabits(); }
 
@@ -903,7 +1034,7 @@ function renderHabitEditor(){
   const wrap=$("habitEditList"); wrap.innerHTML="";
   editHabits.forEach((h,i)=>{
     const row=document.createElement("div"); row.className="hedit";
-    row.innerHTML='<input class="hem" maxlength="2" value="'+esc(h.em)+'"><div class="hgrow"><input class="ht" placeholder="Nombre del hábito" value="'+esc(h.t)+'"><input class="hs" placeholder="Descripción corta (opcional)" value="'+esc(h.s)+'"><div class="hxp"><button class="xpd">−</button><span>+'+h.xp+' XP</span><button class="xpu">+</button></div></div><div class="hcol"><button class="up">↑</button><button class="down">↓</button><button class="del">✕</button></div>';
+    row.innerHTML='<input class="hem" readonly maxlength="2" value="'+esc(h.em)+'"><div class="hgrow"><input class="ht" placeholder="Nombre del hábito" value="'+esc(h.t)+'"><input class="hs" placeholder="Descripción corta (opcional)" value="'+esc(h.s)+'"><div class="hxp"><button class="xpd">−</button><span>+'+h.xp+' XP</span><button class="xpu">+</button></div></div><div class="hcol"><button class="up">↑</button><button class="down">↓</button><button class="del">✕</button></div>';
     row.querySelector(".hem").addEventListener("input",e=>h.em=e.target.value);
     row.querySelector(".ht").addEventListener("input",e=>h.t=e.target.value);
     row.querySelector(".hs").addEventListener("input",e=>h.s=e.target.value);
@@ -929,7 +1060,7 @@ function renderRoutineEditor(){
   editRoutine.forEach((t,i)=>{
     const chips=DAYS_ORDER.map((d,ci)=>'<button type="button" class="daychip'+((t.days||[]).includes(d)?' on':'')+'" data-day="'+d+'">'+DAYS_LABEL[ci]+'</button>').join('');
     const row=document.createElement("div"); row.className="hedit";
-    row.innerHTML='<input class="hem" maxlength="2" value="'+esc(t.em)+'"><div class="hgrow"><input class="ht" placeholder="Tarea (ej: Sacar la basura)" value="'+esc(t.t)+'"><div class="daychips">'+chips+'</div></div><div class="hcol"><button class="del">✕</button></div>';
+    row.innerHTML='<input class="hem" readonly maxlength="2" value="'+esc(t.em)+'"><div class="hgrow"><input class="ht" placeholder="Tarea (ej: Sacar la basura)" value="'+esc(t.t)+'"><div class="daychips">'+chips+'</div></div><div class="hcol"><button class="del">✕</button></div>';
     row.querySelector(".hem").addEventListener("input",e=>t.em=e.target.value);
     row.querySelector(".ht").addEventListener("input",e=>t.t=e.target.value);
     row.querySelectorAll(".daychip").forEach(ch=>ch.addEventListener("click",()=>{ const d=parseInt(ch.dataset.day,10); t.days=t.days||[]; if(t.days.includes(d)) t.days=t.days.filter(x=>x!==d); else t.days.push(d); ch.classList.toggle("on"); }));
@@ -949,7 +1080,7 @@ function renderGoalEditor(){
   const wrap=$("goalEditList"); wrap.innerHTML="";
   editGoals.forEach((g,i)=>{
     const row=document.createElement("div"); row.className="hedit";
-    row.innerHTML='<input class="hem" maxlength="2" value="'+esc(g.em)+'"><div class="hgrow"><input class="ht" placeholder="Meta (ej: Terminar CS50)" value="'+esc(g.text)+'"></div><div class="hcol"><button class="up">↑</button><button class="down">↓</button><button class="del">✕</button></div>';
+    row.innerHTML='<input class="hem" readonly maxlength="2" value="'+esc(g.em)+'"><div class="hgrow"><input class="ht" placeholder="Meta (ej: Terminar CS50)" value="'+esc(g.text)+'"></div><div class="hcol"><button class="up">↑</button><button class="down">↓</button><button class="del">✕</button></div>';
     row.querySelector(".hem").addEventListener("input",e=>g.em=e.target.value);
     row.querySelector(".ht").addEventListener("input",e=>g.text=e.target.value);
     row.querySelector(".up").addEventListener("click",()=>{ if(i>0){ [editGoals[i-1],editGoals[i]]=[editGoals[i],editGoals[i-1]]; renderGoalEditor(); } });
@@ -1072,6 +1203,14 @@ $("rjJoin").addEventListener("click",async ()=>{
 $("gateInstall").addEventListener("click",installApp);
 $("acctInstall").addEventListener("click",installApp);
 $("installClose").addEventListener("click",()=>$("installDlg").close());
+
+$("rnSave").addEventListener("click",doRename);
+$("rnCancel").addEventListener("click",()=>$("retoRenameDlg").close());
+$("medalsMore").addEventListener("click",()=>{ renderAllMedals(); $("medalsDlg").showModal(); });
+$("medalsClose").addEventListener("click",()=>$("medalsDlg").close());
+$("emojiClose").addEventListener("click",()=>$("emojiDlg").close());
+$("celebrate").addEventListener("click",()=>$("celebrate").classList.remove("on"));
+document.addEventListener("click",(e)=>{ const t=e.target; if(t && t.tagName==="INPUT" && (t.classList.contains("hem")||t.id==="evEm")){ e.preventDefault(); openEmojiPicker(t); if(t.blur) t.blur(); } });
 
 $("themeBtn").addEventListener("click",()=>{ const cur=document.documentElement.getAttribute("data-theme")==="light"?"dark":"light"; applyTheme(cur); });
 $("acctBtn").addEventListener("click",()=>{ $("acctEmail").textContent=EMAIL||""; $("acctDlg").showModal(); });
