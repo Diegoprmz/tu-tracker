@@ -239,11 +239,16 @@
   .chactions button.danger{color:var(--ember);border-color:color-mix(in srgb,var(--ember) 35%,transparent)}
   .chactions button.danger:hover{border-color:var(--ember);color:var(--ember)}
 
-  /* emoji picker */
-  .emojigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;max-height:52vh;overflow:auto;margin-top:6px}
+  /* emoji picker (panel dentro del mismo diálogo, no anidado) */
+  .emojigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px;overflow:auto;margin-top:6px;flex:1;min-height:0}
   .emojigrid button{font-size:1.35rem;background:var(--glass-2);border:1px solid var(--line);border-radius:10px;padding:7px 0;cursor:pointer;line-height:1}
-  .emojigrid button:hover{border-color:var(--accent);box-shadow:var(--glow)}
-  input.hem,#evEm{cursor:pointer}
+  .emojigrid button:active{border-color:var(--accent);box-shadow:var(--glow)}
+  .emojipanel{display:none;position:absolute;inset:0;background:var(--modal-bg);border-radius:var(--radius);padding:18px;z-index:5;flex-direction:column}
+  .emojipanel.on{display:flex}
+  .emojipanel-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex:0 0 auto}
+  .emojipanel-h b{font-family:var(--font-display);font-size:1.1rem}
+  .emojipanel-h button{border:0;background:none;color:var(--soft);font-size:1.2rem;cursor:pointer;line-height:1}
+  button.hem{border:1px solid var(--line);border-radius:11px;background:var(--input-bg);color:var(--ink);cursor:pointer;font:inherit}
   .medalsmore{margin-top:12px}
 
   /* celebración de insignias */
@@ -273,7 +278,7 @@
 
   dialog{border:0;border-radius:var(--radius);padding:0;max-width:460px;width:92%;background:transparent;color:var(--ink)}
   dialog::backdrop{background:rgba(6,10,16,.72);backdrop-filter:blur(4px)}
-  .modal{background:var(--modal-bg);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);max-height:86vh;overflow:auto}
+  .modal{background:var(--modal-bg);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);max-height:86vh;overflow:auto;position:relative}
   .modal h3{margin:0 0 4px;font-size:1.2rem}
   .modal .msub{color:var(--soft);font-size:.85rem;margin:0 0 16px}
   .modal .row{display:flex;gap:10px;margin-top:16px}
@@ -480,7 +485,7 @@
 
   <div class="foot">
     <div class="by"><img src="brand-monogram.png" alt=""><span>by Dipzon.Dev</span></div>
-    <small>TuTracker v1.3.0 · offline-first · sincronizado</small>
+    <small>TuTracker v1.3.1 · offline-first · sincronizado</small>
     <button class="reset" id="resetBtn">Reiniciar mi tracker</button>
   </div>
 
@@ -568,7 +573,7 @@
   <h3>Fecha importante</h3>
   <p class="msub">Un examen, una carrera, una competencia…</p>
   <div style="display:flex;gap:8px">
-    <input id="evEm" readonly maxlength="2" placeholder="🎯" style="width:56px;flex:0 0 auto;text-align:center;font-size:1.1rem;cursor:pointer">
+    <button type="button" id="evEm" class="hem" style="width:56px;flex:0 0 auto;text-align:center;font-size:1.1rem">🎯</button>
     <input id="evTitle" placeholder="Ej: Examen final, Maratón CDMX" style="flex:1">
   </div>
   <input id="evDate" type="date" style="margin-top:8px">
@@ -626,12 +631,11 @@
   <div class="row"><button class="btn2" id="rnSave" style="flex:1">Guardar</button><button class="btn2 ghost" id="rnCancel">Cancelar</button></div>
 </div></dialog>
 
-<!-- emoji picker -->
-<dialog id="emojiDlg"><div class="modal">
-  <h3>Elige un emoji</h3>
+<!-- emoji picker: panel reusable (se inserta dentro del diálogo activo, sin anidar) -->
+<div id="emojiPanel" class="emojipanel">
+  <div class="emojipanel-h"><b>Elige un emoji</b><button type="button" id="emojiPanelClose">✕</button></div>
   <div class="emojigrid" id="emojiGrid"></div>
-  <div class="row"><button class="btn2 ghost" id="emojiClose" style="flex:1">Cerrar</button></div>
-</div></dialog>
+</div>
 
 <!-- todas las insignias -->
 <dialog id="medalsDlg"><div class="modal">
@@ -963,8 +967,10 @@ function celebrateMedal(title, count){
 }
 // ---- Emoji picker ----
 const EMOJIS = ("🎯 🔥 💪 🧠 📚 📝 ✏️ 🏆 🥇 ⭐ ✨ ⚡ 🚀 💡 💰 💵 📈 💻 🖥️ 📱 🎨 🎵 🎸 🎹 🏃 🏋️ 🚴 🧘 ⛹️ 🤸 🥊 🥋 ⚽ 🏀 🎾 🏊 🏈 ⚾ 🏐 🎳 🥗 🍎 🥦 🥑 🍳 🍗 🍚 🥤 💧 ☕ 🍵 🥛 😴 🛏️ 🧹 🗑️ 🧺 🧼 🛒 🐶 🐱 🌱 🌳 🌊 ☀️ 🌙 ⛅ 📆 📅 ⏰ ✅ ☑️ 🔔 ❤️ 🧡 💛 💚 💙 💜 🙏 🤝 👏 👍 🎉 🎊 🏁 🧗 🏔️ 🗿 🎓 🔬 🧪 📖 📓 🗂️ 💼 🏢 📞 📧 🌍 🧳 🎬 📷 🎧 🎤 🗣️ 🕹️ ♟️ 🎲 🧩 🚿 🦷 💊 🩺 🕯️ 🧑‍💻 👨‍🍳 💃 🕺").split(" ");
-let emojiTarget=null;
-function openEmojiPicker(inp){ emojiTarget=inp; const g=$("emojiGrid"); if(!g.dataset.built){ EMOJIS.forEach(e=>{ const b=document.createElement("button"); b.type="button"; b.textContent=e; b.addEventListener("click",()=>{ if(emojiTarget){ emojiTarget.value=e; emojiTarget.dispatchEvent(new Event("input",{bubbles:true})); } $("emojiDlg").close(); }); g.appendChild(b); }); g.dataset.built="1"; } $("emojiDlg").showModal(); }
+let emojiCb=null;
+function buildEmojiGrid(){ const g=$("emojiGrid"); if(g.dataset.built) return; EMOJIS.forEach(e=>{ const b=document.createElement("button"); b.type="button"; b.textContent=e; b.addEventListener("click",()=>{ if(emojiCb) emojiCb(e); closeEmojiPanel(); }); g.appendChild(b); }); g.dataset.built="1"; }
+function openEmojiPicker(anchor, cb){ buildEmojiGrid(); emojiCb=cb; const dlg=anchor.closest("dialog"); const host=dlg?dlg.querySelector(".modal"):document.body; const panel=$("emojiPanel"); host.appendChild(panel); host.scrollTop=0; $("emojiGrid").scrollTop=0; panel.classList.add("on"); }
+function closeEmojiPanel(){ $("emojiPanel").classList.remove("on"); emojiCb=null; }
 function renderRewards(){ const s=computeStreak(),wrap=$("rewards"); wrap.innerHTML=""; REWARDS.forEach(r=>{ const hit=s>=r.d; const el=document.createElement("div"); el.className="rw"+(hit?" hit":""); el.innerHTML='<div class="n">'+r.d+'</div><div class="tx"><b>'+r.t+'</b><small>'+r.s+'</small></div><div class="st">'+(hit?"¡Ganada! ✓":(r.d-s)+" días")+'</div>'; wrap.appendChild(el); }); }
 function renderHeat(){ const wrap=$("heat"); wrap.innerHTML=""; const cells=[]; for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); cells.push(ymd(d)); } cells.forEach(k=>{ const day=DB.days[k],el=document.createElement("div"); let cls="cell"; if(day){ if(isCompleted(k))cls+=" l3"; else if(isRescued(k))cls+=" rescued"; else {const n=habitsDone(k); if(n>=3)cls+=" l2"; else if(n>=1)cls+=" l1";} } if(k===TODAY)cls+=" today"; el.className=cls; el.title=k; wrap.appendChild(el); }); }
 // ---- Reto compartido (backend Supabase) ----
@@ -1034,8 +1040,8 @@ function renderHabitEditor(){
   const wrap=$("habitEditList"); wrap.innerHTML="";
   editHabits.forEach((h,i)=>{
     const row=document.createElement("div"); row.className="hedit";
-    row.innerHTML='<input class="hem" readonly maxlength="2" value="'+esc(h.em)+'"><div class="hgrow"><input class="ht" placeholder="Nombre del hábito" value="'+esc(h.t)+'"><input class="hs" placeholder="Descripción corta (opcional)" value="'+esc(h.s)+'"><div class="hxp"><button class="xpd">−</button><span>+'+h.xp+' XP</span><button class="xpu">+</button></div></div><div class="hcol"><button class="up">↑</button><button class="down">↓</button><button class="del">✕</button></div>';
-    row.querySelector(".hem").addEventListener("input",e=>h.em=e.target.value);
+    row.innerHTML='<button type="button" class="hem">'+esc(h.em||"•")+'</button><div class="hgrow"><input class="ht" placeholder="Nombre del hábito" value="'+esc(h.t)+'"><input class="hs" placeholder="Descripción corta (opcional)" value="'+esc(h.s)+'"><div class="hxp"><button class="xpd">−</button><span>+'+h.xp+' XP</span><button class="xpu">+</button></div></div><div class="hcol"><button class="up">↑</button><button class="down">↓</button><button class="del">✕</button></div>';
+    const emB=row.querySelector(".hem"); emB.addEventListener("click",()=>openEmojiPicker(emB,(em)=>{ h.em=em; emB.textContent=em; }));
     row.querySelector(".ht").addEventListener("input",e=>h.t=e.target.value);
     row.querySelector(".hs").addEventListener("input",e=>h.s=e.target.value);
     row.querySelector(".xpd").addEventListener("click",()=>{ h.xp=Math.max(XP_MIN,h.xp-5); renderHabitEditor(); });
@@ -1060,8 +1066,8 @@ function renderRoutineEditor(){
   editRoutine.forEach((t,i)=>{
     const chips=DAYS_ORDER.map((d,ci)=>'<button type="button" class="daychip'+((t.days||[]).includes(d)?' on':'')+'" data-day="'+d+'">'+DAYS_LABEL[ci]+'</button>').join('');
     const row=document.createElement("div"); row.className="hedit";
-    row.innerHTML='<input class="hem" readonly maxlength="2" value="'+esc(t.em)+'"><div class="hgrow"><input class="ht" placeholder="Tarea (ej: Sacar la basura)" value="'+esc(t.t)+'"><div class="daychips">'+chips+'</div></div><div class="hcol"><button class="del">✕</button></div>';
-    row.querySelector(".hem").addEventListener("input",e=>t.em=e.target.value);
+    row.innerHTML='<button type="button" class="hem">'+esc(t.em||"•")+'</button><div class="hgrow"><input class="ht" placeholder="Tarea (ej: Sacar la basura)" value="'+esc(t.t)+'"><div class="daychips">'+chips+'</div></div><div class="hcol"><button class="del">✕</button></div>';
+    const emB=row.querySelector(".hem"); emB.addEventListener("click",()=>openEmojiPicker(emB,(em)=>{ t.em=em; emB.textContent=em; }));
     row.querySelector(".ht").addEventListener("input",e=>t.t=e.target.value);
     row.querySelectorAll(".daychip").forEach(ch=>ch.addEventListener("click",()=>{ const d=parseInt(ch.dataset.day,10); t.days=t.days||[]; if(t.days.includes(d)) t.days=t.days.filter(x=>x!==d); else t.days.push(d); ch.classList.toggle("on"); }));
     row.querySelector(".del").addEventListener("click",()=>{ editRoutine.splice(i,1); renderRoutineEditor(); });
@@ -1080,8 +1086,8 @@ function renderGoalEditor(){
   const wrap=$("goalEditList"); wrap.innerHTML="";
   editGoals.forEach((g,i)=>{
     const row=document.createElement("div"); row.className="hedit";
-    row.innerHTML='<input class="hem" readonly maxlength="2" value="'+esc(g.em)+'"><div class="hgrow"><input class="ht" placeholder="Meta (ej: Terminar CS50)" value="'+esc(g.text)+'"></div><div class="hcol"><button class="up">↑</button><button class="down">↓</button><button class="del">✕</button></div>';
-    row.querySelector(".hem").addEventListener("input",e=>g.em=e.target.value);
+    row.innerHTML='<button type="button" class="hem">'+esc(g.em||"🎯")+'</button><div class="hgrow"><input class="ht" placeholder="Meta (ej: Terminar CS50)" value="'+esc(g.text)+'"></div><div class="hcol"><button class="up">↑</button><button class="down">↓</button><button class="del">✕</button></div>';
+    const emB=row.querySelector(".hem"); emB.addEventListener("click",()=>openEmojiPicker(emB,(em)=>{ g.em=em; emB.textContent=em; }));
     row.querySelector(".ht").addEventListener("input",e=>g.text=e.target.value);
     row.querySelector(".up").addEventListener("click",()=>{ if(i>0){ [editGoals[i-1],editGoals[i]]=[editGoals[i],editGoals[i-1]]; renderGoalEditor(); } });
     row.querySelector(".down").addEventListener("click",()=>{ if(i<editGoals.length-1){ [editGoals[i+1],editGoals[i]]=[editGoals[i],editGoals[i+1]]; renderGoalEditor(); } });
@@ -1150,8 +1156,10 @@ $("goalCancel").addEventListener("click",()=>$("goalDlg").close());
 $("mantraSave").addEventListener("click",saveMantra);
 $("mantraCancel").addEventListener("click",()=>$("mantraDlg").close());
 
-$("eventAddBtn").addEventListener("click",()=>{ $("evEm").value=""; $("evTitle").value=""; $("evDate").value=""; $("eventDlg").showModal(); setTimeout(()=>$("evTitle").focus(),50); });
-$("evSave").addEventListener("click",()=>{ const title=$("evTitle").value.trim(),date=$("evDate").value,em=$("evEm").value.trim()||"📌"; if(!title){toast("Ponle un nombre a la fecha.");return;} if(!date){toast("Elige el día.");return;} DB.events=DB.events||[]; DB.events.push({id:uid(),title,date,em}); DB.eventsTs=Date.now(); persist(); $("eventDlg").close(); renderEvents(); toast("Fecha agregada ✓"); });
+let evEmoji="";
+$("evEm").addEventListener("click",()=>openEmojiPicker($("evEm"),(em)=>{ evEmoji=em; $("evEm").textContent=em; }));
+$("eventAddBtn").addEventListener("click",()=>{ evEmoji=""; $("evEm").textContent="🎯"; $("evTitle").value=""; $("evDate").value=""; $("eventDlg").showModal(); setTimeout(()=>$("evTitle").focus(),50); });
+$("evSave").addEventListener("click",()=>{ const title=$("evTitle").value.trim(),date=$("evDate").value,em=evEmoji||"📌"; if(!title){toast("Ponle un nombre a la fecha.");return;} if(!date){toast("Elige el día.");return;} DB.events=DB.events||[]; DB.events.push({id:uid(),title,date,em}); DB.eventsTs=Date.now(); persist(); $("eventDlg").close(); renderEvents(); toast("Fecha agregada ✓"); });
 $("evCancel").addEventListener("click",()=>$("eventDlg").close());
 
 $("activBtn").addEventListener("click",openActivPicker);
@@ -1208,9 +1216,8 @@ $("rnSave").addEventListener("click",doRename);
 $("rnCancel").addEventListener("click",()=>$("retoRenameDlg").close());
 $("medalsMore").addEventListener("click",()=>{ renderAllMedals(); $("medalsDlg").showModal(); });
 $("medalsClose").addEventListener("click",()=>$("medalsDlg").close());
-$("emojiClose").addEventListener("click",()=>$("emojiDlg").close());
+$("emojiPanelClose").addEventListener("click",closeEmojiPanel);
 $("celebrate").addEventListener("click",()=>$("celebrate").classList.remove("on"));
-document.addEventListener("click",(e)=>{ const t=e.target; if(t && t.tagName==="INPUT" && (t.classList.contains("hem")||t.id==="evEm")){ e.preventDefault(); openEmojiPicker(t); if(t.blur) t.blur(); } });
 
 $("themeBtn").addEventListener("click",()=>{ const cur=document.documentElement.getAttribute("data-theme")==="light"?"dark":"light"; applyTheme(cur); });
 $("acctBtn").addEventListener("click",()=>{ $("acctEmail").textContent=EMAIL||""; $("acctDlg").showModal(); });
