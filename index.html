@@ -219,6 +219,7 @@
   .lb .sc b{font-family:var(--font-display);font-size:1.1rem}
   .lb .sc small{display:block;color:var(--soft);font-size:.66rem;text-transform:uppercase;letter-spacing:.06em}
   .preview-tag{color:var(--ember);font-weight:600}
+  .codebox{margin-top:6px;text-align:center;font-family:var(--font-display);font-weight:700;font-size:1.5rem;letter-spacing:.10em;color:var(--accent);background:var(--glass-2);border:1px dashed var(--accent);border-radius:12px;padding:18px;box-shadow:var(--glow)}
 
   dialog{border:0;border-radius:var(--radius);padding:0;max-width:460px;width:92%;background:transparent;color:var(--ink)}
   dialog::backdrop{background:rgba(6,10,16,.72);backdrop-filter:blur(4px)}
@@ -425,7 +426,7 @@
 
   <div class="foot">
     <div class="by"><img src="brand-monogram.png" alt=""><span>by Dipzon.Dev</span></div>
-    <small>TuTracker v1.2.0 · offline-first · sincronizado</small>
+    <small>TuTracker v1.2.1 · offline-first · sincronizado</small>
     <button class="reset" id="resetBtn">Reiniciar mi tracker</button>
   </div>
 
@@ -525,6 +526,42 @@
   <h3>⬇️ Instalar TuTracker</h3>
   <p class="msub" id="installHelp">—</p>
   <div class="row"><button class="btn2 ghost" id="installClose" style="flex:1">Entendido</button></div>
+</div></dialog>
+
+<!-- reto: entrada -->
+<dialog id="retoEntryDlg"><div class="modal">
+  <h3>Reto compartido</h3>
+  <p class="msub">Compite con amigos en una misma meta.</p>
+  <button class="btn2 fullw" id="retoCreateBtn">➕ Crear un reto</button>
+  <button class="btn2 ghost fullw" id="retoJoinBtn">🔑 Unirme con código</button>
+  <div class="row"><button class="btn2 ghost" id="retoEntryClose" style="flex:1">Cerrar</button></div>
+</div></dialog>
+
+<!-- reto: crear -->
+<dialog id="retoCreateDlg"><div class="modal">
+  <h3>Crear un reto</h3>
+  <p class="msub">Ponle nombre; invitas en el siguiente paso.</p>
+  <input id="rcName" placeholder="Nombre del reto (ej: Reto CS50)">
+  <input id="rcMe" placeholder="Tu nombre visible (ej: Diego)" style="margin-top:8px">
+  <div class="row"><button class="btn2" id="rcCreate" style="flex:1">Crear e invitar</button><button class="btn2 ghost" id="rcCancel">Cancelar</button></div>
+</div></dialog>
+
+<!-- reto: compartir -->
+<dialog id="retoShareDlg"><div class="modal">
+  <h3>¡Reto creado! 🎉</h3>
+  <p class="msub">Comparte el código o el enlace para que se unan.</p>
+  <div class="codebox" id="shareCode">—</div>
+  <div class="row" style="margin-top:12px"><button class="btn2" id="shareBtn" style="flex:1">📲 Compartir invitación</button><button class="btn2 ghost" id="copyBtn">Copiar</button></div>
+  <button class="btn2 ghost fullw" id="shareClose" style="margin-top:10px;margin-bottom:0">Listo</button>
+</div></dialog>
+
+<!-- reto: unirse -->
+<dialog id="retoJoinDlg"><div class="modal">
+  <h3>Unirme a un reto</h3>
+  <p class="msub">Pega el código que te compartieron.</p>
+  <input id="rjCode" placeholder="Código (ej: BASES-DB-7K2)" style="text-transform:uppercase">
+  <input id="rjMe" placeholder="Tu nombre visible" style="margin-top:8px">
+  <div class="row"><button class="btn2" id="rjJoin" style="flex:1">Unirme</button><button class="btn2 ghost" id="rjCancel">Cancelar</button></div>
 </div></dialog>
 
 <div class="toast" id="toast"></div>
@@ -969,7 +1006,27 @@ $("activRunDone").addEventListener("click",()=>{ today.activated=true; persist()
 $("actEdSave").addEventListener("click",saveActivation);
 $("actEdCancel").addEventListener("click",()=>$("activEditDlg").close());
 
-$("challengeBtn").addEventListener("click",()=>toast("Retos compartidos: próximamente ✨"));
+// ---- Reto: flujo de invitación (mockup) ----
+function genCode(){ const w=["BASES","CODE","GYM","LEER","RETO","FOCO","RUN"]; return w[Math.floor(Math.random()*w.length)]+"-"+Math.random().toString(36).slice(2,5).toUpperCase()+"-"+Math.floor(Math.random()*90+10); }
+let pendingCode="";
+function retoLink(code){ return location.origin+"/?reto="+code; }
+$("challengeBtn").addEventListener("click",()=>$("retoEntryDlg").showModal());
+$("retoEntryClose").addEventListener("click",()=>$("retoEntryDlg").close());
+$("retoCreateBtn").addEventListener("click",()=>{ $("retoEntryDlg").close(); $("rcName").value=""; $("rcMe").value=""; $("retoCreateDlg").showModal(); setTimeout(()=>$("rcName").focus(),50); });
+$("retoJoinBtn").addEventListener("click",()=>{ $("retoEntryDlg").close(); $("rjCode").value=""; $("rjMe").value=""; $("retoJoinDlg").showModal(); setTimeout(()=>$("rjCode").focus(),50); });
+$("rcCancel").addEventListener("click",()=>$("retoCreateDlg").close());
+$("rcCreate").addEventListener("click",()=>{ if(!$("rcName").value.trim()){ toast("Ponle nombre al reto."); return; } if(!$("rcMe").value.trim()){ toast("Escribe tu nombre visible."); return; } pendingCode=genCode(); $("shareCode").textContent=pendingCode; $("retoCreateDlg").close(); $("retoShareDlg").showModal(); });
+$("shareClose").addEventListener("click",()=>$("retoShareDlg").close());
+$("copyBtn").addEventListener("click",async ()=>{ try{ await navigator.clipboard.writeText(pendingCode+"  ·  "+retoLink(pendingCode)); toast("Copiado ✓"); }catch(e){ toast("Código: "+pendingCode); } });
+$("shareBtn").addEventListener("click",async ()=>{
+  const msg="Únete a mi reto en TuTracker 💪 Código: "+pendingCode;
+  const url=retoLink(pendingCode);
+  if(navigator.share){ try{ await navigator.share({title:"TuTracker · Reto compartido", text:msg, url}); }catch(e){} }
+  else { window.open("https://wa.me/?text="+encodeURIComponent(msg+" 👉 "+url),"_blank"); }
+});
+$("rjCancel").addEventListener("click",()=>$("retoJoinDlg").close());
+$("rjJoin").addEventListener("click",()=>{ if(!$("rjCode").value.trim()){ toast("Pega el código."); return; } if(!$("rjMe").value.trim()){ toast("Escribe tu nombre visible."); return; } $("retoJoinDlg").close(); toast("¡Te uniste al reto! (demo)"); });
+
 $("gateInstall").addEventListener("click",installApp);
 $("acctInstall").addEventListener("click",installApp);
 $("installClose").addEventListener("click",()=>$("installDlg").close());
