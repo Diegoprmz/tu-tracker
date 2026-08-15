@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TuTracker">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -220,6 +221,9 @@
   .lb .sc small{display:block;color:var(--soft);font-size:.66rem;text-transform:uppercase;letter-spacing:.06em}
   .preview-tag{color:var(--ember);font-weight:600}
   .codebox{margin-top:6px;text-align:center;font-family:var(--font-display);font-weight:700;font-size:1.5rem;letter-spacing:.10em;color:var(--accent);background:var(--glass-2);border:1px dashed var(--accent);border-radius:12px;padding:18px;box-shadow:var(--glow)}
+  .chtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .chtab{border:1px solid var(--line);background:var(--glass-2);color:var(--soft);border-radius:99px;padding:6px 12px;font:inherit;font-size:.76rem;font-weight:600;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chtab.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent);box-shadow:var(--glow)}
 
   dialog{border:0;border-radius:var(--radius);padding:0;max-width:460px;width:92%;background:transparent;color:var(--ink)}
   dialog::backdrop{background:rgba(6,10,16,.72);backdrop-filter:blur(4px)}
@@ -406,8 +410,9 @@
 
   <div class="card">
     <h2>Reto compartido</h2>
-    <p class="sub">Compite con amigos en una misma meta. <span class="preview-tag">· vista previa</span></p>
+    <p class="sub">Compite con amigos en una misma meta.</p>
     <div class="c">
+      <div class="chtabs" id="chTabs"></div>
       <div class="chhead"><b id="chName">—</b><span class="chip-code" id="chCode">—</span></div>
       <ul class="lb" id="lb"></ul>
       <button class="addbtn" id="challengeBtn" style="margin-top:14px">＋ Crear o unirme a un reto</button>
@@ -737,7 +742,7 @@ async function pushRemote(){
 }
 function schedulePush(){ clearTimeout(pushTimer); pushTimer=setTimeout(pushRemote, 900); }
 function persist(){ saveLocal(); schedulePush(); }
-async function initSync(){ setSync("⟳ sincronizando…"); const remote=await pullRemote(); if(remote){ DB=mergeDB(DB, remote); saveLocal(); } TODAY=ymd(new Date()); today=dayObj(TODAY); renderAll(); await pushRemote(); }
+async function initSync(){ setSync("⟳ sincronizando…"); const remote=await pullRemote(); if(remote){ DB=mergeDB(DB, remote); saveLocal(); } TODAY=ymd(new Date()); today=dayObj(TODAY); renderAll(); await pushRemote(); await loadChallenges(); checkRetoLink(); }
 window.addEventListener("online", ()=>{ if(UID) schedulePush(); });
 
 // ================= THEME =================
@@ -846,28 +851,48 @@ function renderEvents(){
 function renderMedals(){ const a=agg(),wrap=$("medals"); wrap.innerHTML=""; MEDALS.forEach(m=>{ const on=m.test(a); const el=document.createElement("div"); el.className="medal"+(on?" on":""); el.innerHTML='<div class="e">'+m.e+'</div><div class="t">'+m.t+'</div><div class="d">'+m.d+'</div>'; wrap.appendChild(el); }); }
 function renderRewards(){ const s=computeStreak(),wrap=$("rewards"); wrap.innerHTML=""; REWARDS.forEach(r=>{ const hit=s>=r.d; const el=document.createElement("div"); el.className="rw"+(hit?" hit":""); el.innerHTML='<div class="n">'+r.d+'</div><div class="tx"><b>'+r.t+'</b><small>'+r.s+'</small></div><div class="st">'+(hit?"¡Ganada! ✓":(r.d-s)+" días")+'</div>'; wrap.appendChild(el); }); }
 function renderHeat(){ const wrap=$("heat"); wrap.innerHTML=""; const cells=[]; for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); cells.push(ymd(d)); } cells.forEach(k=>{ const day=DB.days[k],el=document.createElement("div"); let cls="cell"; if(day){ if(isCompleted(k))cls+=" l3"; else if(isRescued(k))cls+=" rescued"; else {const n=habitsDone(k); if(n>=3)cls+=" l2"; else if(n>=1)cls+=" l1";} } if(k===TODAY)cls+=" today"; el.className=cls; el.title=k; wrap.appendChild(el); }); }
-// ---- Reto compartido (MOCKUP con datos de ejemplo; backend pendiente) ----
-const MOCK_CHALLENGE = {
-  name:"Reto CS50 · Bases de Datos",
-  code:"BASES-DB-7K2",
-  members:[
-    {name:"Andrea", xp:710, streak:15},
-    {name:"Tú", xp:640, streak:12, me:true},
-    {name:"Luis", xp:520, streak:8},
-    {name:"Sofía", xp:480, streak:6}
-  ]
-};
-function renderChallenge(){
-  $("chName").textContent=MOCK_CHALLENGE.name;
-  $("chCode").textContent="🔑 "+MOCK_CHALLENGE.code;
-  const ul=$("lb"); ul.innerHTML="";
-  MOCK_CHALLENGE.members.slice().sort((a,b)=>b.xp-a.xp).forEach((m,i)=>{
-    const li=document.createElement("li"); li.className=(i===0?"top1 ":"")+(m.me?"me":"");
-    li.innerHTML='<div class="rk">'+(i+1)+'</div><div class="who"><b>'+esc(m.name)+'</b><small>Racha '+m.streak+' 🔥</small></div><div class="sc"><b>'+m.xp+'</b><small>XP reto</small></div>';
-    ul.appendChild(li);
-  });
+// ---- Reto compartido (backend Supabase) ----
+let CHALLENGES=[], CH_MEMBERS={}, activeCid=null;
+function chScore(startIso){ const start=(startIso||"").slice(0,10); let s=0; Object.keys(DB.days).forEach(k=>{ if(k>=start) s+=dayXP(k); }); return s; }
+async function loadChallenges(){
+  if(!UID) return;
+  try{
+    const {data:chs}=await sb.from("challenges").select("id,code,name,created_at").order("created_at");
+    CHALLENGES=chs||[]; CH_MEMBERS={};
+    for(const c of CHALLENGES){
+      const {data:ms}=await sb.from("challenge_members").select("user_id,display_name,score,streak").eq("challenge_id",c.id);
+      CH_MEMBERS[c.id]=ms||[];
+    }
+    if((!activeCid || !CHALLENGES.some(c=>c.id===activeCid)) && CHALLENGES.length) activeCid=CHALLENGES[0].id;
+    await pushMyScores();
+  }catch(e){}
+  renderChallenge();
 }
-function renderAll(){ renderStats();renderToday();renderRoutine();renderGoals();renderVs();renderWins();renderEvents();renderChallenge();renderMedals();renderRewards();renderHeat();renderHabits(); }
+async function pushMyScores(){
+  for(const c of CHALLENGES){
+    const sc=chScore(c.created_at), st=computeStreak();
+    try{ await sb.rpc("update_my_score",{p_cid:c.id,p_score:sc,p_streak:st}); }catch(e){}
+    (CH_MEMBERS[c.id]||[]).forEach(m=>{ if(m.user_id===UID){ m.score=sc; m.streak=st; } });
+  }
+}
+function renderChallenge(){
+  const tabs=$("chTabs"); if(!tabs) return;
+  if(!CHALLENGES.length){
+    tabs.innerHTML=""; $("chName").textContent="Sin retos aún"; $("chCode").style.display="none";
+    $("lb").innerHTML='<div class="empty">Crea un reto o únete con un código para competir con amigos.</div>'; return;
+  }
+  $("chCode").style.display="";
+  tabs.innerHTML="";
+  if(CHALLENGES.length>1) CHALLENGES.forEach(c=>{ const b=document.createElement("button"); b.className="chtab"+(c.id===activeCid?" on":""); b.textContent=c.name; b.addEventListener("click",()=>{ activeCid=c.id; renderChallenge(); }); tabs.appendChild(b); });
+  const c=CHALLENGES.find(x=>x.id===activeCid)||CHALLENGES[0];
+  $("chName").textContent=c.name; $("chCode").textContent="🔑 "+c.code;
+  const ul=$("lb"); ul.innerHTML="";
+  const ms=(CH_MEMBERS[c.id]||[]).slice().sort((a,b)=>(b.score||0)-(a.score||0));
+  if(!ms.length){ ul.innerHTML='<div class="empty">Aún no hay miembros con puntuación.</div>'; return; }
+  ms.forEach((m,i)=>{ const me=m.user_id===UID; const li=document.createElement("li"); li.className=(i===0?"top1 ":"")+(me?"me":""); li.innerHTML='<div class="rk">'+(i+1)+'</div><div class="who"><b>'+esc(m.display_name)+(me?" (tú)":"")+'</b><small>Racha '+(m.streak||0)+' 🔥</small></div><div class="sc"><b>'+(m.score||0)+'</b><small>XP reto</small></div>'; ul.appendChild(li); });
+}
+function checkRetoLink(){ try{ const p=new URLSearchParams(location.search).get("reto"); if(p && UID){ $("rjCode").value=p; $("rjMe").value=""; $("retoJoinDlg").showModal(); setTimeout(()=>$("rjMe").focus(),50); history.replaceState({},"",location.pathname); } }catch(e){} }
+function renderAll(){ renderStats();renderToday();renderRoutine();renderGoals();renderVs();renderWins();renderEvents();renderMedals();renderRewards();renderHeat();renderHabits(); }
 
 function uid(){ return "h"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 
@@ -1006,8 +1031,7 @@ $("activRunDone").addEventListener("click",()=>{ today.activated=true; persist()
 $("actEdSave").addEventListener("click",saveActivation);
 $("actEdCancel").addEventListener("click",()=>$("activEditDlg").close());
 
-// ---- Reto: flujo de invitación (mockup) ----
-function genCode(){ const w=["BASES","CODE","GYM","LEER","RETO","FOCO","RUN"]; return w[Math.floor(Math.random()*w.length)]+"-"+Math.random().toString(36).slice(2,5).toUpperCase()+"-"+Math.floor(Math.random()*90+10); }
+// ---- Reto: flujo de invitación (backend real) ----
 let pendingCode="";
 function retoLink(code){ return location.origin+"/?reto="+code; }
 $("challengeBtn").addEventListener("click",()=>$("retoEntryDlg").showModal());
@@ -1015,7 +1039,16 @@ $("retoEntryClose").addEventListener("click",()=>$("retoEntryDlg").close());
 $("retoCreateBtn").addEventListener("click",()=>{ $("retoEntryDlg").close(); $("rcName").value=""; $("rcMe").value=""; $("retoCreateDlg").showModal(); setTimeout(()=>$("rcName").focus(),50); });
 $("retoJoinBtn").addEventListener("click",()=>{ $("retoEntryDlg").close(); $("rjCode").value=""; $("rjMe").value=""; $("retoJoinDlg").showModal(); setTimeout(()=>$("rjCode").focus(),50); });
 $("rcCancel").addEventListener("click",()=>$("retoCreateDlg").close());
-$("rcCreate").addEventListener("click",()=>{ if(!$("rcName").value.trim()){ toast("Ponle nombre al reto."); return; } if(!$("rcMe").value.trim()){ toast("Escribe tu nombre visible."); return; } pendingCode=genCode(); $("shareCode").textContent=pendingCode; $("retoCreateDlg").close(); $("retoShareDlg").showModal(); });
+$("rcCreate").addEventListener("click",async ()=>{
+  const name=$("rcName").value.trim(), me=$("rcMe").value.trim();
+  if(!name){ toast("Ponle nombre al reto."); return; }
+  if(!me){ toast("Escribe tu nombre visible."); return; }
+  $("rcCreate").disabled=true; $("rcCreate").textContent="Creando…";
+  try{ const {data,error}=await sb.rpc("create_challenge",{p_name:name,p_display_name:me}); if(error) throw error;
+    pendingCode=(data&&data[0]&&data[0].code)||""; $("shareCode").textContent=pendingCode; $("retoCreateDlg").close(); $("retoShareDlg").showModal(); await loadChallenges();
+  }catch(e){ toast("No se pudo crear el reto."); }
+  $("rcCreate").disabled=false; $("rcCreate").textContent="Crear e invitar";
+});
 $("shareClose").addEventListener("click",()=>$("retoShareDlg").close());
 $("copyBtn").addEventListener("click",async ()=>{ try{ await navigator.clipboard.writeText(pendingCode+"  ·  "+retoLink(pendingCode)); toast("Copiado ✓"); }catch(e){ toast("Código: "+pendingCode); } });
 $("shareBtn").addEventListener("click",async ()=>{
@@ -1025,7 +1058,16 @@ $("shareBtn").addEventListener("click",async ()=>{
   else { window.open("https://wa.me/?text="+encodeURIComponent(msg+" 👉 "+url),"_blank"); }
 });
 $("rjCancel").addEventListener("click",()=>$("retoJoinDlg").close());
-$("rjJoin").addEventListener("click",()=>{ if(!$("rjCode").value.trim()){ toast("Pega el código."); return; } if(!$("rjMe").value.trim()){ toast("Escribe tu nombre visible."); return; } $("retoJoinDlg").close(); toast("¡Te uniste al reto! (demo)"); });
+$("rjJoin").addEventListener("click",async ()=>{
+  const code=$("rjCode").value.trim(), me=$("rjMe").value.trim();
+  if(!code){ toast("Pega el código."); return; }
+  if(!me){ toast("Escribe tu nombre visible."); return; }
+  $("rjJoin").disabled=true; $("rjJoin").textContent="Uniéndome…";
+  try{ const {error}=await sb.rpc("join_challenge",{p_code:code,p_display_name:me}); if(error) throw error;
+    $("retoJoinDlg").close(); await loadChallenges(); toast("¡Te uniste al reto! 🎉");
+  }catch(e){ toast(String(e&&e.message||"").includes("invalid_code")?"Código inválido.":"No se pudo unir."); }
+  $("rjJoin").disabled=false; $("rjJoin").textContent="Unirme";
+});
 
 $("gateInstall").addEventListener("click",installApp);
 $("acctInstall").addEventListener("click",installApp);
@@ -1041,7 +1083,7 @@ $("logoutBtn").addEventListener("click",async ()=>{ await sb.auth.signOut(); loc
 
 // ================= AUTH =================
 const gate=$("gate"),app=$("app");
-function showApp(){ gate.classList.add("hidden"); app.classList.remove("hidden"); }
+function showApp(){ gate.classList.add("hidden"); app.classList.remove("hidden"); renderChallenge(); }
 function gateErr(m){ $("gateErr").textContent=m||""; }
 async function doLogin(){
   const email=$("emailIn").value.trim().toLowerCase(), pass=$("passIn").value; gateErr("");
