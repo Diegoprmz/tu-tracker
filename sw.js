@@ -1,4 +1,4 @@
-const CACHE = "dipzon-tracker-v9";
+const CACHE = "dipzon-tracker-v10";
 const CORE = [
   "./",
   "./index.html",
