@@ -1,4 +1,4 @@
-const CACHE = "dipzon-tracker-v11";
+const CACHE = "dipzon-tracker-v12";
 const CORE = [
   "./",
   "./index.html",
@@ -54,4 +54,27 @@ self.addEventListener("fetch", (e) => {
       return hit || net;
     })
   );
+});
+
+// ---- Push notifications ----
+self.addEventListener("push", (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data ? e.data.text() : "" }; }
+  const title = d.title || "TuTracker";
+  e.waitUntil(self.registration.showNotification(title, {
+    body: d.body || "",
+    icon: "./icon-192.png",
+    badge: "./icon-192.png",
+    vibrate: [40, 60, 40],
+    data: { url: d.url || "/" }
+  }));
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  e.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const c of all) { if ("focus" in c) { c.focus(); return; } }
+    if (self.clients.openWindow) return self.clients.openWindow((e.notification.data && e.notification.data.url) || "/");
+  })());
 });
