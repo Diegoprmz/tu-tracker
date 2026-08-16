@@ -322,6 +322,14 @@
   .amodal b{color:var(--accent)}
   .opt{display:flex;align-items:center;gap:9px;padding:12px;border:1px solid var(--line);border-radius:11px;margin-bottom:8px;cursor:pointer;font-size:.9rem}
   .opt input{width:auto!important;accent-color:var(--accent);box-shadow:none!important}
+  .pushbox{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+  .pushrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .pushrow + .pushrow{margin-top:10px}
+  .pushrow span{font-size:.9rem;font-weight:600}
+  .pushbox select{width:auto;padding:8px 10px}
+  .pushbox #pushToggle{width:auto;padding:8px 14px;box-shadow:none}
+  .pushbox #pushToggle.on{background:color-mix(in srgb,var(--ember) 16%,transparent);color:var(--ember);border-color:color-mix(in srgb,var(--ember) 35%,transparent)}
+  .pushhint{font-size:.74rem;color:var(--soft);line-height:1.5;margin-top:10px}
 
   .hedit{display:flex;gap:8px;align-items:flex-start;padding:11px 0;border-top:1px dashed var(--line-soft)}
   .hedit:first-child{border-top:0}
@@ -524,7 +532,7 @@
 
   <div class="foot">
     <div class="by"><img src="brand-monogram.png" alt=""><span>by Dipzon.Dev</span></div>
-    <small>TuTracker v1.4.0 · offline-first · sincronizado</small>
+    <small>TuTracker v1.5.0 · offline-first · sincronizado</small>
     <button class="reset" id="resetBtn">Reiniciar mi tracker</button>
   </div>
 
@@ -567,6 +575,11 @@
   <button class="btn2 ghost fullw" id="acctGoals">🎯 Objetivos generales</button>
   <button class="btn2 ghost fullw" id="acctMantra">✍️ Frase motivacional</button>
   <button class="btn2 ghost fullw installable" id="acctInstall">⬇️ Instalar app</button>
+  <div class="pushbox">
+    <div class="pushrow"><span>🔔 Recordatorio diario</span><button class="btn2 ghost" id="pushToggle">Activar</button></div>
+    <div class="pushrow" id="pushHourRow" style="display:none"><span>Hora</span><select id="pushHour"></select></div>
+    <div class="pushhint" id="pushHint"></div>
+  </div>
   <button class="btn2 logout" id="logoutBtn">Cerrar sesión</button>
   <button class="btn2 ghost" id="acctClose" style="width:100%">Cerrar</button>
 </div></dialog>
@@ -887,6 +900,39 @@ async function installApp(){
   else msg="En tu navegador (Chrome/Edge): busca el ícono ⊕ / «Instalar» en la barra de direcciones.";
   $("installHelp").textContent=msg; $("installDlg").showModal();
 }
+
+// ================= PUSH (notificaciones) =================
+const VAPID_PUBLIC="BBBou3s5_Q7-qrspcOXxdvChux2dvbw9tOabnknATTEj9HlpXMqKjKZcxQw4eb3M5dxkx-98Ep1M2Mew1RbY6g0";
+function b64ToU8(b){ const pad="=".repeat((4-b.length%4)%4); const s=(b+pad).replace(/-/g,"+").replace(/_/g,"/"); const raw=atob(s); const u=new Uint8Array(raw.length); for(let i=0;i<raw.length;i++)u[i]=raw.charCodeAt(i); return u; }
+function pushSupported(){ return ("serviceWorker" in navigator) && ("PushManager" in window) && ("Notification" in window); }
+async function currentPushSub(){ if(!pushSupported()) return null; try{ const reg=await navigator.serviceWorker.ready; return await reg.pushManager.getSubscription(); }catch(e){ return null; } }
+async function refreshPushUI(){
+  const hourSel=$("pushHour");
+  if(hourSel && !hourSel.dataset.built){ for(let h=0;h<24;h++){ const o=document.createElement("option"); o.value=h; o.textContent=(h<10?"0":"")+h+":00"; hourSel.appendChild(o); } hourSel.value=21; hourSel.dataset.built="1"; hourSel.addEventListener("change",savePushHour); }
+  const btn=$("pushToggle"), hint=$("pushHint"), hourRow=$("pushHourRow");
+  if(!pushSupported()){ btn.disabled=true; btn.textContent="No disponible"; hint.textContent="En iPhone: instala la app en tu pantalla de inicio (iOS 16.4+) para recibir recordatorios."; hourRow.style.display="none"; return; }
+  const sub=await currentPushSub(); let row=null;
+  if(sub && UID){ try{ const {data}=await sb.from("push_subs").select("hour,enabled").eq("endpoint",sub.endpoint).maybeSingle(); row=data; }catch(e){} }
+  const on=!!(sub && row && row.enabled);
+  btn.disabled=false; btn.textContent=on?"Desactivar":"Activar"; btn.classList.toggle("on",on);
+  hourRow.style.display=on?"":"none";
+  if(row && typeof row.hour==="number") $("pushHour").value=row.hour;
+  hint.textContent = on ? "Te avisaremos a esa hora si no cerraste tu día." : (("Notification" in window && Notification.permission==="denied") ? "Bloqueaste las notificaciones; reactívalas en los ajustes del navegador." : "Activa un recordatorio para no romper tu racha 🔥");
+}
+async function enablePush(){
+  try{
+    if(Notification.permission!=="granted"){ const p=await Notification.requestPermission(); if(p!=="granted"){ toast("Permiso no concedido."); return refreshPushUI(); } }
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub) sub=await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:b64ToU8(VAPID_PUBLIC) });
+    const j=sub.toJSON(); const hour=parseInt($("pushHour").value||"21",10); const tzoff=-new Date().getTimezoneOffset();
+    const {error}=await sb.from("push_subs").upsert({ endpoint:sub.endpoint, user_id:UID, p256dh:j.keys.p256dh, auth:j.keys.auth, hour, tzoff, enabled:true, updated_at:new Date().toISOString() });
+    if(error) throw error;
+    toast("Recordatorio activado 🔔"); refreshPushUI();
+  }catch(e){ toast("No se pudo activar el recordatorio."); refreshPushUI(); }
+}
+async function disablePush(){ try{ const sub=await currentPushSub(); if(sub) await sb.from("push_subs").update({enabled:false}).eq("endpoint",sub.endpoint); toast("Recordatorio desactivado"); }catch(e){} refreshPushUI(); }
+async function savePushHour(){ try{ const sub=await currentPushSub(); if(sub){ const hour=parseInt($("pushHour").value,10); const tzoff=-new Date().getTimezoneOffset(); await sb.from("push_subs").update({hour,tzoff}).eq("endpoint",sub.endpoint); toast("Hora del recordatorio guardada"); } }catch(e){} }
 
 // ================= RENDER =================
 const $=id=>document.getElementById(id);
@@ -1284,7 +1330,8 @@ $("emojiPanelClose").addEventListener("click",closeEmojiPanel);
 $("celebrate").addEventListener("click",()=>$("celebrate").classList.remove("on"));
 
 $("themeBtn").addEventListener("click",()=>{ const cur=document.documentElement.getAttribute("data-theme")==="light"?"dark":"light"; applyTheme(cur); });
-$("acctBtn").addEventListener("click",()=>{ $("acctEmail").textContent=EMAIL||""; renderAcctMedals(); $("acctDlg").showModal(); });
+$("acctBtn").addEventListener("click",()=>{ $("acctEmail").textContent=EMAIL||""; renderAcctMedals(); refreshPushUI(); $("acctDlg").showModal(); });
+$("pushToggle").addEventListener("click",()=>{ if($("pushToggle").classList.contains("on")) disablePush(); else enablePush(); });
 $("acctClose").addEventListener("click",()=>$("acctDlg").close());
 $("acctGoals").addEventListener("click",()=>{ $("acctDlg").close(); openGoalEditor(); });
 $("acctMantra").addEventListener("click",()=>{ $("acctDlg").close(); openMantra(); });
