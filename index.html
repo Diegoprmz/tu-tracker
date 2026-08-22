@@ -277,7 +277,7 @@
   .medalsmore{margin-top:12px}
 
   /* celebración de insignias */
-  .celebrate{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(6,10,16,.72);backdrop-filter:blur(6px)}
+  .celebrate{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(6,10,16,.72);backdrop-filter:blur(6px);box-sizing:border-box;padding:calc(env(safe-area-inset-top, 44px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px)}
   .celebrate.on{display:flex;animation:celeBg .35s ease both}
   @keyframes celeBg{from{opacity:0}to{opacity:1}}
   .celebox{position:relative;text-align:center;padding:30px}
@@ -356,7 +356,7 @@
   .actpick button.ap-del{color:var(--ember)}
 
   .activBtn{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:40;border:1px solid color-mix(in srgb,var(--ember) 50%,transparent);border-radius:16px;padding:13px 16px;background:linear-gradient(135deg,#e0742f,var(--ember));color:#241009;font:inherit;font-weight:700;box-shadow:var(--ember-glow),0 12px 30px rgba(0,0,0,.3);cursor:pointer;font-size:.86rem}
-  .toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-100px);background:var(--modal-bg);border:1px solid var(--accent);color:var(--ink);padding:12px 20px;border-radius:14px;font-weight:600;z-index:60;box-shadow:var(--glow),var(--shadow);transition:transform .4s cubic-bezier(.2,.9,.3,1);max-width:90%;text-align:center;font-size:.9rem}
+  .toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top, 44px) + 20px);transform:translateX(-50%) translateY(-100px);background:var(--modal-bg);border:1px solid var(--accent);color:var(--ink);padding:12px 20px;border-radius:14px;font-weight:600;z-index:60;box-shadow:var(--glow),var(--shadow);transition:transform .4s cubic-bezier(.2,.9,.3,1);max-width:90%;text-align:center;font-size:.9rem}
   .toast.on{transform:translateX(-50%) translateY(0)}
 
   .foot{text-align:center;margin-top:22px;display:flex;flex-direction:column;align-items:center;gap:8px}
@@ -532,7 +532,7 @@
 
   <div class="foot">
     <div class="by"><img src="brand-monogram.png" alt=""><span>by Dipzon.Dev</span></div>
-    <small>TuTracker v1.5.0 · offline-first · sincronizado</small>
+    <small>TuTracker v1.5.1 · offline-first · sincronizado</small>
     <button class="reset" id="resetBtn">Reiniciar mi tracker</button>
   </div>
 
