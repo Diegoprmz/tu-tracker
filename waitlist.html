@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es-MX" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1822">
+<title>Lista de espera · TuTracker</title>
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#16222f;--ink:#e8ebee;--soft:#9aa3ad;--silver:#c7c7c7;
+    --accent:#3ddc97;--accent-light:#78f2bd;--on-accent:#06251a;
+    --line:rgba(255,255,255,.10);--line-soft:rgba(255,255,255,.06);
+    --card-bg:rgba(255,255,255,.04);--input-bg:rgba(255,255,255,.04);--input-ph:#6f7885;
+    --glow:0 0 20px rgba(61,220,151,.5);--shadow:0 26px 70px -34px rgba(0,0,0,.85);
+    --font-display:"Playfair Display",Georgia,serif;
+    --font-sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:var(--font-sans);color:var(--ink);line-height:1.6;background:
+      radial-gradient(120% 80% at 72% 0%, rgba(38,58,82,.55) 0%, transparent 55%),
+      radial-gradient(90% 70% at 8% 100%, rgba(61,220,151,.10) 0%, transparent 60%),
+      var(--bg);background-attachment:fixed;min-height:100vh;
+      padding:calc(env(safe-area-inset-top,20px) + 28px) 18px calc(env(safe-area-inset-bottom,20px) + 40px)}
+  .wrap{max-width:560px;margin:0 auto}
+  .by{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:18px;opacity:.85}
+  .by img{width:16px;height:16px}
+  .by span{font-family:var(--font-display);font-size:.85rem;color:var(--silver)}
+  h1{font-family:var(--font-display);font-weight:600;font-size:clamp(1.7rem,6vw,2.3rem);text-align:center;margin:0 0 10px;letter-spacing:-.01em}
+  .lead{text-align:center;color:var(--soft);font-size:.98rem;max-width:44ch;margin:0 auto 32px}
+  .lead b{color:var(--ink)}
+
+  .card{background:var(--card-bg);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:var(--shadow);backdrop-filter:blur(20px)}
+  label.field{display:block;margin-bottom:16px}
+  label.field span{display:block;font-size:.76rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--soft);margin-bottom:7px}
+  input[type=text],input[type=email],select,textarea{
+    width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 13px;
+    font:inherit;background:var(--input-bg);color:var(--ink)}
+  input::placeholder,textarea::placeholder{color:var(--input-ph)}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(61,220,151,.18)}
+  textarea{min-height:80px;resize:vertical;font-family:inherit}
+
+  .modtitle{font-size:.76rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--soft);margin:22px 0 10px}
+  .mods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media (max-width:420px){.mods{grid-template-columns:1fr}}
+  .modopt{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:13px;padding:13px;cursor:pointer;transition:.15s}
+  .modopt:has(input:checked){border-color:var(--accent);background:rgba(61,220,151,.08);box-shadow:var(--glow)}
+  .modopt input{margin-top:3px;accent-color:var(--accent)}
+  .modopt .em{font-size:1.15rem;line-height:1}
+  .modopt b{display:block;font-size:.9rem}
+  .modopt small{display:block;color:var(--soft);font-size:.76rem;margin-top:2px}
+
+  button{width:100%;border:1px solid var(--accent);border-radius:12px;padding:15px;font:inherit;font-weight:700;font-size:.95rem;cursor:pointer;background:var(--accent);color:var(--on-accent);margin-top:24px;box-shadow:var(--glow);transition:filter .2s}
+  button:hover{filter:brightness(1.08)}
+  button:disabled{opacity:.55;cursor:default}
+  .err{color:#ff8a80;font-size:.85rem;text-align:center;min-height:20px;margin-top:10px}
+
+  .done{display:none;text-align:center;padding:20px 6px}
+  .done.on{display:block}
+  .done .e{font-size:2.6rem}
+  .done h2{font-family:var(--font-display);font-size:1.5rem;margin:14px 0 6px}
+  .done p{color:var(--soft);font-size:.95rem;max-width:38ch;margin:0 auto}
+  .foot{text-align:center;color:var(--soft);font-size:.74rem;margin-top:28px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="by"><img src="brand-monogram.png" alt=""><span>by Dipzon.Dev</span></div>
+  <h1>Ayúdanos a construir<br>tu TuTracker</h1>
+  <p class="lead">Estamos armando <b>módulos a la medida</b> — para estudiantes, negocios, vida fitness y más. Cuéntanos qué necesitas y te avisamos cuando esté listo.</p>
+
+  <div class="card">
+    <form id="form">
+      <label class="field"><span>Tu nombre</span><input type="text" id="fName" placeholder="Cómo te llamas" required></label>
+      <label class="field"><span>Tu correo</span><input type="email" id="fEmail" placeholder="tu@correo.com" required></label>
+
+      <div class="modtitle">¿Qué módulos te interesan? (elige los que quieras)</div>
+      <div class="mods" id="mods">
+        <label class="modopt"><input type="checkbox" value="estudiante"><span><span class="em">📚</span><b>Estudiante</b><small>Materias, tareas, horario</small></span></label>
+        <label class="modopt"><input type="checkbox" value="fit"><span><span class="em">💪</span><b>Vida fitness</b><small>Entreno, comidas, medidas</small></span></label>
+        <label class="modopt"><input type="checkbox" value="daily"><span><span class="em">☀️</span><b>Daily</b><small>Lo del día a día</small></span></label>
+        <label class="modopt"><input type="checkbox" value="negocios"><span><span class="em">💼</span><b>Negocios</b><small>Clientes, gastos, metas</small></span></label>
+        <label class="modopt"><input type="checkbox" value="bebes"><span><span class="em">👶</span><b>Con bebés</b><small>Tomas, sueño, citas</small></span></label>
+        <label class="modopt"><input type="checkbox" value="finanzas"><span><span class="em">💰</span><b>Finanzas</b><small>Ahorro, presupuesto</small></span></label>
+      </div>
+
+      <label class="field" style="margin-top:22px"><span>¿Algo que te gustaría contarnos? (opcional)</span><textarea id="fComment" placeholder="Lo que organizas hoy, con qué app o método, qué te frustra..."></textarea></label>
+
+      <button type="submit" id="submitBtn">Unirme a la lista de espera</button>
+      <div class="err" id="err"></div>
+    </form>
+    <div class="done" id="done">
+      <div class="e">🎉</div>
+      <h2>¡Listo!</h2>
+      <p>Ya estás en la lista. Te avisaremos en cuanto tu módulo esté disponible.</p>
+    </div>
+  </div>
+  <p class="foot">TuTracker · by Dipzon.Dev</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const sb = window.supabase.createClient(
+  "https://erseehhvaqgsqsvjkovu.supabase.co",
+  "sb_publishable_rfknvv_GQIRIrxnVnTd3YA_dmwYY5sq"
+);
+const $ = id => document.getElementById(id);
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("err").textContent = "";
+  const name = $("fName").value.trim();
+  const email = $("fEmail").value.trim().toLowerCase();
+  const modules = [...document.querySelectorAll('#mods input:checked')].map(x => x.value);
+  const comment = $("fComment").value.trim();
+  if (!name) { $("err").textContent = "Escribe tu nombre."; return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $("err").textContent = "Correo no válido."; return; }
+  if (!modules.length) { $("err").textContent = "Elige al menos un módulo."; return; }
+  $("submitBtn").disabled = true; $("submitBtn").textContent = "Enviando…";
+  const { error } = await sb.from("module_waitlist").insert({ name, email, modules, comment: comment || null });
+  $("submitBtn").disabled = false; $("submitBtn").textContent = "Unirme a la lista de espera";
+  if (error) { $("err").textContent = "No se pudo enviar. Intenta de nuevo."; return; }
+  $("form").style.display = "none";
+  $("done").classList.add("on");
+});
+</script>
+</body>
+</html>
